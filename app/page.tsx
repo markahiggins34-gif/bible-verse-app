@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { VerseResult } from "@/lib/types";
+import { VerseResult } from "../lib/types";
 
 export default function Home() {
   const [topic, setTopic] = useState("");
