@@ -56,7 +56,7 @@ Provide exactly 5 relevant Bible verses using the New Living Translation (NLT). 
       },
     });
 
-    const resultText = response.text();
+    const resultText = response.text;
     if (!resultText) {
       throw new Error("No response generated from AI.");
     }
