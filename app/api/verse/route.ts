@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     const ai = new GoogleGenAI({ apiKey });
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-1.5-flash-latest",
       contents: `You are a biblical scholar. The user wants to search for Bible verses about: "${topic}". 
 
 Provide exactly 5 relevant Bible verses using the New Living Translation (NLT). For each verse, include the reference, the exact text in NLT, and a 1-2 sentence context explaining its application to the topic.`,
