@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#d9d3c4" />
+<title>Verse Finder</title>
+<style>
+  :root {
+    --bg-deep: #d3cdbd;
+    --bg-mid: #ddd7c8;
+    --card: #f3efe4;
+    --card-border: #cec5ac;
+    --divider: #ded5bc;
+    --ink: #33383a;
+    --muted: #71766f;
+    --accent: #8a4a35;
+    --accent-hover: #9c5a42;
+    --accent-ink: #fbf3e8;
+    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-deep);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    min-height: 100vh;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    display: flex;
+    flex-direction: column;
+    background:
+      radial-gradient(1100px 700px at 15% -10%, var(--bg-mid) 0%, transparent 60%),
+      linear-gradient(180deg, #ddd7c8 0%, #d3cdbd 100%);
+  }
+  header {
+    padding: 40px 20px 10px;
+    text-align: center;
+    border-bottom: 1px solid var(--card-border);
+  }
+  header h1 {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: var(--ink);
+  }
+  header p {
+    margin: 8px 0 18px;
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+  main {
+    flex: 1;
+    padding: 20px 16px 48px;
+    max-width: 560px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  input[type="text"] {
+    flex: 1;
+    padding: 14px 16px;
+    font-size: 16px;
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--ink);
+    outline: none;
+    font-family: var(--sans);
+  }
+  input[type="text"]::placeholder {
+    color: #9a9686;
+  }
+  input[type="text"]:focus {
+    border-color: var(--accent);
+  }
+  button {
+    font-family: var(--sans);
+    cursor: pointer;
+    border: none;
+  }
+  #submit-btn {
+    padding: 14px 22px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 10px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    transition: background 0.15s ease;
+  }
+  #submit-btn:active {
+    background: var(--accent-hover);
+  }
+  #submit-btn:disabled {
+    opacity: 0.55;
+  }
+  .dg-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 22px;
+  }
+  #dg-search-btn {
+    padding: 7px 12px;
+    font-size: 12.5px;
+    font-weight: 500;
+    border-radius: 7px;
+    background: transparent;
+    border: 1px solid var(--card-border);
+    color: var(--muted);
+    letter-spacing: 0.2px;
+  }
+  #dg-search-btn:active {
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+  #status {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    min-height: 20px;
+    margin-bottom: 8px;
+  }
+  #results {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .verse-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 18px 18px 16px;
+  }
+  .verse-ref {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .verse-text {
+    font-family: var(--serif);
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .verse-reason {
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+    border-top: 1px solid var(--divider);
+    padding-top: 8px;
+    margin-bottom: 10px;
+  }
+  .verse-dg-btn {
+    padding: 6px 11px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 7px;
+    background: transparent;
+    border: 1px solid var(--card-border);
+    color: var(--muted);
+    letter-spacing: 0.2px;
+  }
+  .verse-dg-btn:active {
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 30px;
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Verse Finder</h1>
+    <p>Type a topic &middot; get five relevant verses</p>
+  </header>
+  <main>
+    <form id="search-form">
+      <input type="text" id="topic-input" placeholder="e.g. anxiety, forgiveness, patience" autocomplete="off" autocapitalize="off" />
+      <button type="submit" id="submit-btn">Find</button>
+    </form>
+    <div class="dg-row">
+      <button type="button" id="dg-search-btn">Search Desiring God &rarr;</button>
+    </div>
+    <div id="status"></div>
+    <div id="results"></div>
+  </main>
+
+  <script>
+    const form = document.getElementById('search-form');
+    const input = document.getElementById('topic-input');
+    const button = document.getElementById('submit-btn');
+    const dgButton = document.getElementById('dg-search-btn');
+    const status = document.getElementById('status');
+    const results = document.getElementById('results');
+
+    results.innerHTML = '<div class="empty-state">Try a topic like "hope," "fear," or "gratitude" to get started.</div>';
+
+    function dgSearchUrl(query) {
+      return 'https://www.desiringgod.org/search/results?q=' + encodeURIComponent(query);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const topic = input.value.trim();
+      if (!topic) return;
+
+      button.disabled = true;
+      status.textContent = 'Searching...';
+      results.innerHTML = '';
+
+      try {
+        const resp = await fetch('/api/verses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic })
+        });
+        const data = await resp.json();
+
+        if (!resp.ok) {
+          throw new Error(data.error || 'Something went wrong.');
+        }
+
+        status.textContent = '';
+        results.innerHTML = data.verses.map(v => `
+          <div class="verse-card">
+            <div class="verse-ref">${escapeHtml(v.reference)}</div>
+            <div class="verse-text">${escapeHtml(v.text)}</div>
+            <div class="verse-reason">${escapeHtml(v.reason)}</div>
+            <button type="button" class="verse-dg-btn" data-ref="${escapeHtml(v.reference)}">Search Desiring God for this verse &rarr;</button>
+          </div>
+        `).join('');
+      } catch (err) {
+        status.textContent = '';
+        results.innerHTML = `<div class="empty-state">${escapeHtml(err.message)}</div>`;
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    dgButton.addEventListener('click', () => {
+      const topic = input.value.trim();
+      if (!topic) {
+        input.focus();
+        return;
+      }
+      window.open(dgSearchUrl(topic), '_blank', 'noopener');
+    });
+
+    results.addEventListener('click', (e) => {
+      const btn = e.target.closest('.verse-dg-btn');
+      if (!btn) return;
+      window.open(dgSearchUrl(btn.dataset.ref), '_blank', 'noopener');
+    });
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str ?? '';
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
