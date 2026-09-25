@@ -60,6 +60,7 @@ function cleanNltHtml(html) {
     .replace(/<span[^>]*class="tn"[^>]*>[\s\S]*?<\/span>/gi, '')
     // Verse number, e.g. <span class="vn">13</span>
     .replace(/<span[^>]*class="vn"[^>]*>[\s\S]*?<\/span>/gi, '')
+    .replace(/<\/?(span|a|em|i|b|strong)\b[^>]*>/gi, '')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ')
     .replace(/&#8217;|&rsquo;/g, '’')
@@ -166,10 +167,82 @@ async function fetchApiBibleText(reference, apiKey, opts) {
   }
 }
 
+// ---- Whole-chapter lookup (NLT) ----
+// The NLT API returns a chapter when asked for "Book.Chapter" (no verse).
+// Each verse arrives wrapped in its own <verse_export vn="3"> tag, so we can
+// split on that tag to get verse-by-verse text. Poetry (Psalms, Proverbs...)
+// comes as one <p> per line; we keep those line breaks so it reads like poetry.
+function nltChapterRefCandidates(book, chapter) {
+  const noSpace = book.replace(/\s+/g, '');
+  const dashed = book.replace(/\s+/g, '-');
+  // The spelled-out name ("1 Corinthians.13") works for every book we've
+  // tested, so try it first; the others are fallbacks.
+  return [...new Set([`${book}.${chapter}`, `${noSpace}.${chapter}`, `${dashed}.${chapter}`])];
+}
+
+function cleanNltFragment(html) {
+  return html
+    .replace(/<h[1-3][^>]*>[\s\S]*?<\/h[1-3]>/gi, '')
+    .replace(/<a[^>]*class="a-tn"[^>]*>[\s\S]*?<\/a>/gi, '')
+    .replace(/<span[^>]*class="tn-ref"[^>]*>[\s\S]*?<\/span>/gi, '')
+    .replace(/<span[^>]*class="tn"[^>]*>[\s\S]*?<\/span>/gi, '')
+    .replace(/<span[^>]*class="vn"[^>]*>[\s\S]*?<\/span>/gi, '')
+    .replace(/<\/p>/gi, '\n')
+    // Inline tags (e.g. the small-caps "LORD") vanish without adding a space,
+    // so punctuation right after them stays attached: "the LORD," not "the LORD ,".
+    .replace(/<\/?(span|a|em|i|b|strong)\b[^>]*>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#8217;|&rsquo;/g, '’')
+    .replace(/&#8216;|&lsquo;/g, '‘')
+    .replace(/&#8220;|&ldquo;/g, '“')
+    .replace(/&#8221;|&rdquo;/g, '”')
+    .replace(/&#8212;|&mdash;/g, '—')
+    .replace(/&#8211;|&ndash;/g, '–')
+    .replace(/&amp;/g, '&')
+    .replace(/NLT\s*API\s*#?\s*\d*\.?/gi, '')
+    .split('\n')
+    .map(line => line.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .join('\n');
+}
+
+// Returns { book, chapter, items: [{type:'heading', text} | {type:'verse', n:'3', text}] } or null.
+async function fetchNltChapter(reference, apiKey) {
+  const parsed = parseReference(reference);
+  if (!parsed) return null;
+  const { book, chapter } = parsed;
+  for (const ref of nltChapterRefCandidates(book, chapter)) {
+    try {
+      const url = `https://api.nlt.to/api/passages?ref=${encodeURIComponent(ref)}&version=NLT&key=${encodeURIComponent(apiKey)}`;
+      const resp = await fetch(url);
+      if (!resp.ok) continue;
+      const html = (await resp.text()).replace(/<head[\s\S]*?<\/head>/gi, '');
+      const blocks = html.split(/<verse_export\b/i).slice(1);
+      if (!blocks.length) continue;
+      const items = [];
+      for (const block of blocks) {
+        const vn = (block.match(/\bvn="([^"]+)"/) || [])[1];
+        const body = block.replace(/^[^>]*>/, '').split(/<\/verse_export>/i)[0];
+        // Section subheadings (e.g. "The Two Paths") sit just before a verse.
+        const headings = [...body.matchAll(/<h4[^>]*>([\s\S]*?)<\/h4>/gi)].map(m => cleanNltFragment(m[1]));
+        headings.filter(Boolean).forEach(text => items.push({ type: 'heading', text }));
+        const text = cleanNltFragment(body.replace(/<h4[^>]*>[\s\S]*?<\/h4>/gi, ''));
+        if (vn && text) items.push({ type: 'verse', n: vn, text });
+      }
+      if (items.some(i => i.type === 'verse')) return { book, chapter, items };
+    } catch {
+      // try next candidate
+    }
+  }
+  return null;
+}
+
 module.exports = {
   parseReference,
   bookCode,
   fetchNltText,
+  fetchNltChapter,
   fetchEsvText,
   fetchApiBibleText
 };
