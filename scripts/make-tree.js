@@ -80,15 +80,29 @@ function root(x, y, angle, len, width, depth) {
   }
 }
 
-// Trunk: two outer edges that taper, plus fine bark lines between them.
+// Trunk: a solid, dark tapered shape so it reads as one piece with the branches.
+// (The old outline-plus-bark-lines version is still "drawn" and then thrown
+// away, only so the random numbers stay in the same order: that keeps every
+// branch, root and leaf exactly where it was.)
+const before = strokes.length;
 for (let i = -3; i <= 3; i++) {
   const edge = i === -3 || i === 3;
   const xb = TRUNK_X + i * 3.4, xt = TRUNK_X + i * 1.9;
   penLine(xb + between(-0.4, 0.4), GROUND_Y + 1, xt + between(-0.4, 0.4), TRUNK_TOP, edge ? 1.5 : 0.5, edge ? 1 : 0.5, 0.06);
 }
-// Flared base where trunk meets roots
 penLine(TRUNK_X - 10.2, GROUND_Y + 1, TRUNK_X - 17, GROUND_Y + 6, 1.4, 1, 0.1);
 penLine(TRUNK_X + 10.2, GROUND_Y + 1, TRUNK_X + 17, GROUND_Y + 6, 1.4, 1, 0.1);
+strokes.splice(before);
+
+const T = TRUNK_X, top = TRUNK_TOP - 4, base = GROUND_Y + 1;
+strokes.push({
+  // left edge: flared foot, gentle inward curve, narrower top; then back down the right edge
+  d: `M${T - 18} ${base + 6}C${T - 11} ${base + 2} ${T - 9} ${base - 8} ${T - 8} ${base - 20}` +
+     `S${T - 6.5} ${top + 12} ${T - 6} ${top}L${T + 6} ${top}` +
+     `C${T + 6.5} ${top + 12} ${T + 8} ${base - 30} ${T + 8.5} ${base - 20}` +
+     `S${T + 11} ${base + 2} ${T + 18} ${base + 6}Z`,
+  w: 1.2, o: 1, fill: true
+});
 // Crown: two main limbs leave the top of the trunk
 branch(TRUNK_X - 5, TRUNK_TOP, -136, 34, 4.4, 5);
 branch(TRUNK_X - 2, TRUNK_TOP, -106, 36, 4.4, 6);
@@ -158,8 +172,8 @@ for (let i = 0; i < 5; i++) {
 }
 
 // ---- Assemble ----
-const body = strokes.map(({ d, w, o }) =>
-  `<path d="${d}" stroke-width="${r1(w)}"${o < 1 ? ` stroke-opacity="${r1(o)}"` : ''}/>`
+const body = strokes.map(({ d, w, o, fill }) =>
+  `<path d="${d}" stroke-width="${r1(w)}"${o < 1 ? ` stroke-opacity="${r1(o)}"` : ''}${fill ? ' fill="#2b2f31"' : ''}/>`
 ).join('');
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Ink sketch of a tree with deep roots beside a river">` +
