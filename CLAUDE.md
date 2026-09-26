@@ -25,6 +25,6 @@ GEMINI_API_KEY, NLT_API_KEY (optional, falls back to TEST), ESV_API_KEY, BIBLE_A
 One path only, so live never drifts from the code:
   1. Claude edits + commits in this folder (git history lives here).
   2. Mark runs `git push` from Terminal in this folder (the Mac's saved GitHub token covers all repos).
-  3. Vercel project `bible-app` is connected to the GitHub repo and should publish main automatically.
+  3. Vercel project `bible-app` is connected to the GitHub repo and publishes main automatically (link repaired 2026-09-25 via Settings > Git > Reconnect).
 Do not use `npx vercel --prod` except as a fallback if the automatic deploy is broken.
 The six old bible-verse-app-* Vercel projects were deleted 2026-09-25; only `bible-app` uses this repo now.
