@@ -8,6 +8,7 @@ Personal PWA: type a topic, get Bible verses (Gemini picks references, NLT API s
 - Vercel project: "bible-app" (team markahiggins34-2440s-projects)
   - Live: https://bible-app-sepia-chi.vercel.app  (also bible-app-markahiggins34-2440s-projects.vercel.app)
 - Old copies, do not edit: ../bible-app-old-sep16, ~/Documents/Cursor/Bible App (July Next.js version)
+- Claude's shells can't push to GitHub or reach *.vercel.app / api.nlt.to; the browser pane (logged into Vercel) can.
 
 ## Layout
 - public/index.html   whole frontend (HTML + CSS + JS in one file)
@@ -21,6 +22,9 @@ Personal PWA: type a topic, get Bible verses (Gemini picks references, NLT API s
 GEMINI_API_KEY, NLT_API_KEY (optional, falls back to TEST), ESV_API_KEY, BIBLE_API_KEY
 
 ## Deploying
-Always commit here first, then deploy from this folder, so live never drifts from the code:
-  git push                 # save to GitHub
-  npx vercel --prod        # publish (run `npx vercel` without --prod for a test link)
+One path only, so live never drifts from the code:
+  1. Claude edits + commits in this folder (git history lives here).
+  2. Mark runs `git push` from Terminal in this folder (the Mac's saved GitHub token covers all repos).
+  3. Vercel project `bible-app` is connected to the GitHub repo and should publish main automatically.
+Do not use `npx vercel --prod` except as a fallback if the automatic deploy is broken.
+The six old bible-verse-app-* Vercel projects were deleted 2026-09-25; only `bible-app` uses this repo now.
